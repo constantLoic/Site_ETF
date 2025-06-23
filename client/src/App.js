@@ -68,7 +68,7 @@ function App() {
           <label>Profil de risque:</label>
           <select value={risk} onChange={(e) => setRisk(e.target.value)}>
             <option value="low">Faible</option>
-            <option value="medium">Moyen</option>
+            <option value="medium">Moyenne</option>
             <option value="high">Élevé</option>
           </select>
         </div>
