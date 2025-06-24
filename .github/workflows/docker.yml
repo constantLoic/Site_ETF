@@ -5,51 +5,15 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: self-hosted
 
     steps:
-      - name: 📥 Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: 🔐 Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: 🏗️ Build and push client image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./client
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/etf-advisor-client:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/etf-advisor-client:${{ github.sha }}
-
-      - name: 🏗️ Build and push server image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./server
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/etf-advisor-server:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/etf-advisor-server:${{ github.sha }}
-
-      - name: 🚀 Deploy to remote server via SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
+      - name: Build and run locally
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          
-          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST << 'EOF'
-            cd /root/app/SITE_ETF
-            docker-compose down
-            docker-compose pull
-            docker-compose up -d --build
-            docker image prune -af
-          EOF
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d --build
